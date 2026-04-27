@@ -138,7 +138,7 @@
       color: var(--text-color);
       word-break: break-word;
       overflow: hidden;
-      white-space: pre;
+      z-index: 2;
     }
 
     /* Centre circle — poppy style */
@@ -151,6 +151,7 @@
       transform: translate(-50%, -50%);
       width: var(--center-size);
       height: var(--center-size);
+      z-index: 1;
     }
     /* === END CIRCLE TEXT WRAPPER === */
 
@@ -292,6 +293,8 @@ went to sea in a beautiful pea-green boat..."></textarea>
     const centerColor = document.getElementById('center-color');
 
     function update() {
+      // Use innerHTML + <br> so explicit newlines render as line breaks.
+      // word-break + the floated <i> elements handle wrapping around the circle shape.
       circleText.innerHTML = textarea.value
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
