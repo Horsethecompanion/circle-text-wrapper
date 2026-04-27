@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Circle Text Wrapper</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -30,11 +29,7 @@
       line-height: 1.8; padding: 1rem; resize: vertical; outline: none;
     }
     textarea:focus { border-color: #7c6af7; }
-    .preview-wrap {
-      width: 340px; height: 420px;
-      display: flex; align-items: center; justify-content: center;
-      /* This is what we export — capture at its natural size */
-    }
+    .preview-wrap { width: 340px; height: 420px; display: flex; align-items: center; justify-content: center; }
 
     /* === CIRCLE TEXT WRAPPER === */
     .circle-container {
@@ -136,7 +131,6 @@ went to sea in a beautiful pea-green boat..."></textarea>
     const bgColor = document.getElementById('bg-color');
     const textColor = document.getElementById('text-color');
     const circle = document.getElementById('circle');
-    const previewWrap = document.getElementById('preview-wrap');
     const centerSizeSlider = document.getElementById('center-size-slider');
     const centerSizeValue = document.getElementById('center-size-value');
     const centerColor = document.getElementById('center-color');
@@ -200,10 +194,10 @@ ${text}
       showToast('CSS copied!');
     });
 
-    // Download PNG — export at the circle's actual pixel size (no scaling)
+    // Download PNG
     document.getElementById('btn-screenshot').addEventListener('click', () => {
-      const s = parseInt(sizeSlider.value);
-      const p = parseInt(paddingSlider.value);
+      const S = parseInt(sizeSlider.value);
+      const P = parseInt(paddingSlider.value);
       const bg = bgColor.value;
       const tc = textColor.value;
       const CS = parseInt(centerSizeSlider.value);
@@ -211,49 +205,43 @@ ${text}
       const rawText = textarea.value;
 
       const canvas = document.createElement('canvas');
-      canvas.width = s;
-      canvas.height = s;
+      canvas.width = S;
+      canvas.height = S;
       const ctx = canvas.getContext('2d');
 
       // Draw circle background
       ctx.beginPath();
-      ctx.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+      ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2);
       ctx.fillStyle = bg;
       ctx.fill();
 
-      // Clip to inner circle so text that "wraps" stays inside
+      // Clip text drawing to the inner circle area
       ctx.save();
       ctx.beginPath();
-      ctx.arc(s / 2, s / 2, (s - 2 * p) / 2, 0, Math.PI * 2);
+      ctx.arc(S / 2, S / 2, (S - 2 * P) / 2, 0, Math.PI * 2);
       ctx.clip();
 
-      // Draw text lines — centred vertically, wrapping at circle edge
-      const lines = rawText.split('\n');
       ctx.fillStyle = tc;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-
-      const fontSize = Math.max(10, Math.round(s * 0.04));
+      const fontSize = Math.max(10, Math.round(S * 0.04));
       ctx.font = `${fontSize}px Georgia, serif`;
 
-      // Group lines that will be on the same "row" of the circle
       const lineHeight = fontSize * 1.5;
+      const lines = rawText.split('\n');
       const totalTextHeight = lines.length * lineHeight;
-      let yOffset = (s - totalTextHeight) / 2 + lineHeight / 2;
+      let yOffset = (S - totalTextHeight) / 2 + lineHeight / 2;
 
       for (const line of lines) {
         const words = line.split(' ');
         let currentLine = '';
-
         for (const word of words) {
           const testLine = currentLine ? currentLine + ' ' + word : word;
           const metrics = ctx.measureText(testLine);
-          // Check if this line fits inside the visible arc width at this y position
-          const yFromCenter = yOffset - s / 2;
-          const halfChord = Math.max(0, Math.sqrt(Math.max(0, Math.pow((s - 2 * p) / 2, 2) - yFromCenter * yFromCenter)));
+          const yFromCenter = yOffset - S / 2;
+          const halfChord = Math.sqrt(Math.max(0, Math.pow((S - 2 * P) / 2, 2) - yFromCenter * yFromCenter));
           if (metrics.width / 2 > halfChord && currentLine !== '') {
-            // Line too wide — draw current line and start new one
-            ctx.fillText(currentLine, s / 2, yOffset);
+            ctx.fillText(currentLine, S / 2, yOffset);
             yOffset += lineHeight;
             currentLine = word;
           } else {
@@ -261,19 +249,25 @@ ${text}
           }
         }
         if (currentLine) {
-          ctx.fillText(currentLine, s / 2, yOffset);
+          ctx.fillText(currentLine, S / 2, yOffset);
           yOffset += lineHeight;
         } else {
-          yOffset += lineHeight; // blank line
+          yOffset += lineHeight;
         }
       }
-
       ctx.restore();
 
-      // Draw centre circle (poppy centre)
+      // Draw centre circle — erase any text that overlaps it first
       if (CS > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
-        ctx.arc(s / 2, s / 2, CS / 2, 0, Math.PI * 2);
+        ctx.arc(S / 2, S / 2, CS / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        // Fill with centre colour
+        ctx.beginPath();
+        ctx.arc(S / 2, S / 2, CS / 2, 0, Math.PI * 2);
         ctx.fillStyle = CC;
         ctx.fill();
       }
