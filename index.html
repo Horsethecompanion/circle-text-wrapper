@@ -85,10 +85,10 @@
 
     /* === CIRCLE TEXT WRAPPER === */
     .circle-container {
-      --s: 300px;  /* circle size */
-      --p: 18px;   /* padding inside circle */
+      --s: 300px;
+      --p: 18px;
       --bg: #7c6af7;
-      --text-color: #1a1a2e;
+      --text-color: #ffffff;
       --text-bg: transparent;
 
       width: var(--s);
@@ -136,6 +136,7 @@
       color: var(--text-color);
       word-break: break-word;
       overflow: hidden;
+      white-space: pre;
     }
     /* === END CIRCLE TEXT WRAPPER === */
 
@@ -262,7 +263,12 @@ went to sea in a beautiful pea-green boat..."></textarea>
     const circle = document.getElementById('circle');
 
     function update() {
-      circleText.textContent = textarea.value;
+      // Use innerHTML + <br> so newlines render as line breaks
+      circleText.innerHTML = textarea.value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
     }
 
     function updateSize() {
@@ -337,6 +343,7 @@ went to sea in a beautiful pea-green boat..."></textarea>
     font-size: 0.85rem;
     line-height: 1.6;
     color: ${tc};
+    white-space: pre;
   ">
 ${text}
   </div>
@@ -390,54 +397,97 @@ ${text}
   font-size: 0.85rem;
   line-height: 1.6;
   color: ${tc};
+  white-space: pre;
 }`;
       navigator.clipboard.writeText(css);
       showToast('CSS copied!');
     });
 
-    // Download PNG using canvas
+    // --- PNG Export ---
+    // Measures text width character-by-character, splitting lines so they
+    // fit within the inner circle diameter. Then draws each line along the
+    // same circular path used by the browser CSS float technique.
     document.getElementById('btn-screenshot').addEventListener('click', () => {
-      const s = parseInt(sizeSlider.value);
-      const p = parseInt(paddingSlider.value);
+      const S = parseInt(sizeSlider.value);   // circle diameter
+      const P = parseInt(paddingSlider.value); // padding (inset)
       const bg = bgColor.value;
       const tc = textColor.value;
-      const text = textarea.value;
+      const rawText = textarea.value;
 
       const canvas = document.createElement('canvas');
-      canvas.width = s;
-      canvas.height = s;
+      canvas.width = S;
+      canvas.height = S;
       const ctx = canvas.getContext('2d');
 
-      // Draw circle
+      // Draw circle background
       ctx.beginPath();
-      ctx.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+      ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2);
       ctx.fillStyle = bg;
       ctx.fill();
 
-      // Draw text using clip
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(s / 2, s / 2, (s - 2 * p) / 2, 0, Math.PI * 2);
-      ctx.clip();
-
+      const innerR = (S - 2 * P) / 2;       // inner circle radius (text path)
+      const midR = S / 2;                   // midpoint radius (where chars sit)
+      const fontSize = Math.round(S * 0.045);
+      ctx.font = `${fontSize}px Georgia, serif`;
       ctx.fillStyle = tc;
-      ctx.font = `13px Georgia, serif`;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
 
-      const lines = text.split('\n');
-      const lineHeight = 18;
-      const totalHeight = lines.length * lineHeight;
-      let yStart = (s - totalHeight) / 2 + lineHeight / 2;
+      // Split input into lines, then for each line find char-by-char where it wraps
+      const lines = rawText.split('\n');
+      const arcLines = []; // each element is an array of chars (one circular arc row)
 
-      lines.forEach(line => {
-        ctx.fillText(line, s / 2, yStart);
-        yStart += lineHeight;
+      for (const line of lines) {
+        if (line === '') {
+          arcLines.push([]); // empty line = blank row
+          continue;
+        }
+        const chars = [...line];
+        let currentLine = [];
+
+        for (const ch of chars) {
+          const testLine = currentLine.concat(ch).join('');
+          const metrics = ctx.measureText(testLine);
+          const requiredArc = Math.acos((midR - metrics.width / 2) / midR) * midR;
+
+          if (requiredArc > innerR) {
+            // Too wide — start a new arc-line
+            arcLines.push(currentLine);
+            currentLine = [ch];
+          } else {
+            currentLine.push(ch);
+          }
+        }
+        if (currentLine.length > 0) arcLines.push(currentLine);
+      }
+
+      const totalArcHeight = arcLines.length * fontSize * 1.35;
+      const startAngle = -Math.PI / 2 - (totalArcHeight / 2 / midR);
+
+      arcLines.forEach((chars, idx) => {
+        if (chars.length === 0) return;
+        const lineStr = chars.join('');
+        const lineWidth = ctx.measureText(lineStr).width;
+
+        // Total angular span of this line's text around the circle
+        const totalArcAngle = Math.acos((midR - lineWidth / 2) / midR) * 2;
+        const letterAngle = totalArcAngle / Math.max(lineStr.length - 1, 1);
+
+        const baseAngle = startAngle + idx * (fontSize * 1.35 / midR);
+
+        for (let i = 0; i < lineStr.length; i++) {
+          const theta = baseAngle + i * letterAngle;
+          const x = midR + (midR - fontSize * 0.35) * Math.cos(theta);
+          const y = midR + (midR - fontSize * 0.35) * Math.sin(theta);
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(theta + Math.PI / 2); // letters upright along arc
+          ctx.fillText(lineStr[i], 0, 0);
+          ctx.restore();
+        }
       });
 
-      ctx.restore();
-
-      const link = document.createElement('PNG' ? 'a' : 'a');
+      const link = document.createElement('a');
       link.download = 'circle-poem.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
