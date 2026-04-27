@@ -4,13 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Circle Text Wrapper</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #ffffff;
@@ -22,209 +18,65 @@
       padding: 2rem;
       gap: 1.5rem;
     }
-
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1a1a2e;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    label {
-      font-size: 0.875rem;
-      color: #555;
-    }
-
-    input[type="range"] {
-      width: 160px;
-      accent-color: #7c6af7;
-    }
-
-    .input-area {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      width: 100%;
-      max-width: 1100px;
-    }
-
+    h1 { font-size: 1.5rem; font-weight: 600; color: #1a1a2e; }
+    .controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: center; }
+    label { font-size: 0.875rem; color: #555; }
+    input[type="range"] { width: 160px; accent-color: #7c6af7; }
+    .input-area { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1100px; }
     textarea {
-      width: 340px;
-      height: 420px;
-      background: #f4f5f7;
-      border: 1px solid #dcdcdc;
-      border-radius: 8px;
-      color: #1a1a2e;
-      font-family: 'Georgia', serif;
-      font-size: 0.9rem;
-      line-height: 1.8;
-      padding: 1rem;
-      resize: vertical;
-      outline: none;
+      width: 340px; height: 420px;
+      background: #f4f5f7; border: 1px solid #dcdcdc; border-radius: 8px;
+      color: #1a1a2e; font-family: 'Georgia', serif; font-size: 0.9rem;
+      line-height: 1.8; padding: 1rem; resize: vertical; outline: none;
     }
-
-    textarea:focus {
-      border-color: #7c6af7;
-    }
-
-    .preview-wrap {
-      width: 340px;
-      height: 420px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    textarea:focus { border-color: #7c6af7; }
+    .preview-wrap { width: 340px; height: 420px; display: flex; align-items: center; justify-content: center; }
 
     /* === CIRCLE TEXT WRAPPER === */
     .circle-container {
-      --s: 300px;
-      --p: 18px;
-      --bg: #7c6af7;
-      --text-color: #ffffff;
-      --text-bg: transparent;
-      --center-size: 0px;
-      --center-color: #000000;
-
-      width: var(--s);
-      height: var(--s);
-      border-radius: 50%;
-      position: relative;
-      background: var(--bg);
-      overflow: hidden;
+      --s: 300px; --p: 18px; --bg: #7c6af7; --text-color: #ffffff;
+      --center-size: 0px; --center-color: #000000;
+      width: var(--s); height: var(--s); border-radius: 50%;
+      position: relative; background: var(--bg); overflow: hidden;
     }
-
-    .circle-container i,
-    .circle-container::before {
-      content: '';
-      float: left;
-      height: 100%;
-      width: 50%;
-      shape-outside: radial-gradient(
-        farthest-side at right,
-        transparent calc(100% - var(--p)),
-        var(--text-bg) calc(100% - var(--p))
-      );
+    .circle-container i, .circle-container::before {
+      content: ''; float: left; height: 100%; width: 50%;
+      shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), var(--text-bg) calc(100% - var(--p)));
     }
-
     .circle-container i {
       float: right;
-      shape-outside: radial-gradient(
-        farthest-side at left,
-        transparent calc(100% - var(--p)),
-        var(--text-bg) calc(100% - var(--p))
-      );
+      shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), var(--text-bg) calc(100% - var(--p)));
     }
-
     .circle-text {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: var(--p);
-      font-family: 'Georgia', serif;
-      font-size: 0.8rem;
-      line-height: 1.6;
-      color: var(--text-color);
-      word-break: break-word;
-      overflow: hidden;
-      z-index: 2;
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: var(--p); font-family: 'Georgia', serif; font-size: 0.8rem;
+      line-height: 1.6; color: var(--text-color); word-break: break-word;
+      overflow: hidden; z-index: 2;
     }
-
-    /* Centre circle — poppy style */
     .circle-center {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--center-color);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: var(--center-size);
-      height: var(--center-size);
-      z-index: 1;
+      position: absolute; border-radius: 50%; background: var(--center-color);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: var(--center-size); height: var(--center-size); z-index: 1;
     }
     /* === END CIRCLE TEXT WRAPPER === */
 
-    .export-btns {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    button {
-      background: #7c6af7;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1.25rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    button:hover {
-      background: #6b5ce7;
-    }
-
-    button.secondary {
-      background: #2a2a4a;
-      color: #ccc;
-    }
-
-    button.secondary:hover {
-      background: #3a3a5a;
-    }
-
-    #size-value {
-      font-size: 0.8rem;
-      color: #888;
-      min-width: 40px;
-      text-align: right;
-    }
-
-    .color-row {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    input[type="color"] {
-      width: 36px;
-      height: 28px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      background: none;
-      padding: 0;
-    }
-
-    /* Toast */
+    .export-btns { display: flex; gap: 0.75rem; }
+    button { background: #7c6af7; color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1.25rem; font-size: 0.875rem; cursor: pointer; transition: background 0.15s; }
+    button:hover { background: #6b5ce7; }
+    button.secondary { background: #2a2a4a; color: #ccc; }
+    button.secondary:hover { background: #3a3a5a; }
+    #size-value { font-size: 0.8rem; color: #888; min-width: 40px; text-align: right; }
+    .color-row { display: flex; gap: 0.75rem; align-items: center; }
+    input[type="color"] { width: 36px; height: 28px; border: none; border-radius: 4px; cursor: pointer; background: none; padding: 0; }
     #toast {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 50%;
+      position: fixed; bottom: 1.5rem; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: #1a1a2e;
-      color: #e0e0e0;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      transition: transform 0.3s ease;
-      pointer-events: none;
+      background: #1a1a2e; color: #e0e0e0; padding: 0.5rem 1rem;
+      border-radius: 6px; font-size: 0.85rem;
+      transition: transform 0.3s ease; pointer-events: none;
     }
-
-    #toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -233,25 +85,19 @@
   <div class="controls">
     <label>Circle size: <span id="size-value">300</span>px</label>
     <input type="range" id="size-slider" min="200" max="500" value="300">
-
-    <label style="margin-left: 0.5rem;">Padding:</label>
+    <label style="margin-left:0.5rem;">Padding:</label>
     <input type="range" id="padding-slider" min="8" max="50" value="18" style="width:100px">
-
     <div class="color-row">
-      <label>Circle:</label>
-      <input type="color" id="bg-color" value="#7c6af7">
-      <label>Text:</label>
-      <input type="color" id="text-color" value="#ffffff">
+      <label>Circle:</label><input type="color" id="bg-color" value="#7c6af7">
+      <label>Text:</label><input type="color" id="text-color" value="#ffffff">
     </div>
   </div>
 
-  <div class="controls" style="gap: 0.75rem;">
+  <div class="controls" style="gap:0.75rem;">
     <label>Centre size: <span id="center-size-value">0</span>px</label>
     <input type="range" id="center-size-slider" min="0" max="120" value="0">
-
     <div class="color-row">
-      <label>Centre:</label>
-      <input type="color" id="center-color" value="#000000">
+      <label>Centre:</label><input type="color" id="center-color" value="#000000">
     </div>
   </div>
 
@@ -260,7 +106,6 @@
 
 The owl and the pussycat
 went to sea in a beautiful pea-green boat..."></textarea>
-
     <div class="preview-wrap">
       <div class="circle-container" id="circle">
         <i></i>
@@ -287,34 +132,22 @@ went to sea in a beautiful pea-green boat..."></textarea>
     const bgColor = document.getElementById('bg-color');
     const textColor = document.getElementById('text-color');
     const circle = document.getElementById('circle');
-    const centerEl = document.getElementById('center');
     const centerSizeSlider = document.getElementById('center-size-slider');
     const centerSizeValue = document.getElementById('center-size-value');
     const centerColor = document.getElementById('center-color');
 
     function update() {
-      // Use innerHTML + <br> so explicit newlines render as line breaks.
-      // word-break + the floated <i> elements handle wrapping around the circle shape.
       circleText.innerHTML = textarea.value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/\n/g, '<br>');
     }
-
     function updateSize() {
-      const s = sizeSlider.value + 'px';
-      circle.style.setProperty('--s', s);
+      circle.style.setProperty('--s', sizeSlider.value + 'px');
       sizeValue.textContent = sizeSlider.value;
     }
-
-    function updatePadding() {
-      circle.style.setProperty('--p', paddingSlider.value + 'px');
-    }
-
+    function updatePadding() { circle.style.setProperty('--p', paddingSlider.value + 'px'); }
     function updateCenter() {
-      const cs = centerSizeSlider.value + 'px';
-      circle.style.setProperty('--center-size', cs);
+      circle.style.setProperty('--center-size', centerSizeSlider.value + 'px');
       centerSizeValue.textContent = centerSizeSlider.value;
     }
 
@@ -326,78 +159,22 @@ went to sea in a beautiful pea-green boat..."></textarea>
     textColor.addEventListener('input', () => circle.style.setProperty('--text-color', textColor.value));
     centerColor.addEventListener('input', () => circle.style.setProperty('--center-color', centerColor.value));
 
-    // Toast
     function showToast(msg) {
       const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
+      t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2000);
     }
 
     // Copy HTML
     document.getElementById('btn-html').addEventListener('click', () => {
-      const s = sizeSlider.value;
-      const p = paddingSlider.value;
-      const bg = bgColor.value;
-      const tc = textColor.value;
-      const cs = centerSizeSlider.value;
-      const cc = centerColor.value;
+      const s = sizeSlider.value, p = paddingSlider.value, bg = bgColor.value;
+      const tc = textColor.value, cs = centerSizeSlider.value, cc = centerColor.value;
       const text = textarea.value;
-
-      const centerHTML = cs > 0 ? `
-  <div style="
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: ${cs}px;
-    height: ${cs}px;
-    border-radius: 50%;
-    background: ${cc};
-  "></div>` : '';
-
-      const html = `<div style="
-  --s: ${s}px;
-  --p: ${p}px;
-  width: var(--s);
-  height: var(--s);
-  border-radius: 50%;
-  position: relative;
-  background: ${bg};
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-">
-  <i style="
-    content: '';
-    float: left;
-    height: 100%;
-    width: 50%;
-    shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
-  "></i>
-  <i style="
-    content: '';
-    float: right;
-    height: 100%;
-    width: 50%;
-    shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
-  "></i>
-  <div style="
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: var(--p);
-    font-family: Georgia, serif;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: ${tc};
-    white-space: pre;
-  ">
+      const centerHTML = cs > 0 ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${cs}px;height:${cs}px;border-radius:50%;background:${cc};"></div>` : '';
+      const html = `<div style="--s:${s}px;--p:${p}px;width:var(--s);height:var(--s);border-radius:50%;position:relative;background:${bg};overflow:hidden;display:flex;align-items:center;justify-content:center;">
+  <i style="content:'';float:left;height:100%;width:50%;shape-outside:radial-gradient(farthest-side at right,transparent calc(100% - var(--p)),#fff calc(100% - var(--p)));"></i>
+  <i style="content:'';float:right;height:100%;width:50%;shape-outside:radial-gradient(farthest-side at left,transparent calc(100% - var(--p)),#fff calc(100% - var(--p)));"></i>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:var(--p);font-family:Georgia,serif;font-size:0.85rem;line-height:1.6;color:${tc};word-break:break-word;">
 ${text}
   </div>${centerHTML}
 </div>`;
@@ -407,171 +184,31 @@ ${text}
 
     // Copy CSS
     document.getElementById('btn-css').addEventListener('click', () => {
-      const s = sizeSlider.value;
-      const p = paddingSlider.value;
-      const bg = bgColor.value;
-      const tc = textColor.value;
-      const cs = centerSizeSlider.value;
-      const cc = centerColor.value;
-
-      const css = `.circle-container {
-  --s: ${s}px;
-  --p: ${p}px;
-  width: var(--s);
-  height: var(--s);
-  border-radius: 50%;
-  position: relative;
-  background: ${bg};
-  overflow: hidden;
-}
-
-.circle-container i,
-.circle-container::before {
-  content: '';
-  float: left;
-  height: 100%;
-  width: 50%;
-  shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
-}
-
-.circle-container i {
-  float: right;
-  shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
-}
-
-.circle-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: var(--p);
-  font-family: Georgia, serif;
-  font-size: 0.85rem;
-  line-height: 1.6;
-  color: ${tc};
-  white-space: pre;
-}
-
-.center-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: ${cs}px;
-  height: ${cs}px;
-  border-radius: 50%;
-  background: ${cc};
-}`;
+      const s = sizeSlider.value, p = paddingSlider.value, bg = bgColor.value;
+      const tc = textColor.value, cs = centerSizeSlider.value, cc = centerColor.value;
+      const css = `.circle-container{--s:${s}px;--p:${p}px;width:var(--s);height:var(--s);border-radius:50%;position:relative;background:${bg};overflow:hidden}
+.circle-container i,.circle-container::before{content:'';float:left;height:100%;width:50%;shape-outside:radial-gradient(farthest-side at right,transparent calc(100% - var(--p)),#fff calc(100% - var(--p)))}
+.circle-container i{float:right;shape-outside:radial-gradient(farthest-side at left,transparent calc(100% - var(--p)),#fff calc(100% - var(--p)))}
+.circle-text{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:var(--p);font-family:Georgia,serif;font-size:0.85rem;line-height:1.6;color:${tc};word-break:break-word}
+.center-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${cs}px;height:${cs}px;border-radius:50%;background:${cc}}`;
       navigator.clipboard.writeText(css);
       showToast('CSS copied!');
     });
 
-    // --- PNG Export ---
-    // Measures text width character-by-character, splitting lines so they
-    // fit within the inner circle diameter. Then draws each line along the
-    // same circular path used by the browser CSS float technique.
+    // Download PNG — uses dom-to-image to capture the actual rendered DOM
     document.getElementById('btn-screenshot').addEventListener('click', () => {
-      const S = parseInt(sizeSlider.value);   // circle diameter
-      const P = parseInt(paddingSlider.value); // padding (inset)
-      const bg = bgColor.value;
-      const tc = textColor.value;
-      const CS = parseInt(centerSizeSlider.value); // centre size
-      const CC = centerColor.value;
-      const rawText = textarea.value;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = S;
-      canvas.height = S;
-      const ctx = canvas.getContext('2d');
-
-      // Draw circle background
-      ctx.beginPath();
-      ctx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2);
-      ctx.fillStyle = bg;
-      ctx.fill();
-
-      // Draw centre circle (poppy centre)
-      if (CS > 0) {
-        ctx.beginPath();
-        ctx.arc(S / 2, S / 2, CS / 2, 0, Math.PI * 2);
-        ctx.fillStyle = CC;
-        ctx.fill();
-      }
-
-      const innerR = (S - 2 * P) / 2;       // inner circle radius (text path)
-      const midR = S / 2;                   // midpoint radius (where chars sit)
-      const fontSize = Math.round(S * 0.045);
-      ctx.font = `${fontSize}px Georgia, serif`;
-      ctx.fillStyle = tc;
-      ctx.textAlign = 'center';
-
-      // Split input into lines, then for each line find char-by-char where it wraps
-      const lines = rawText.split('\n');
-      const arcLines = []; // each element is an array of chars (one circular arc row)
-
-      for (const line of lines) {
-        if (line === '') {
-          arcLines.push([]); // empty line = blank row
-          continue;
-        }
-        const chars = [...line];
-        let currentLine = [];
-
-        for (const ch of chars) {
-          const testLine = currentLine.concat(ch).join('');
-          const metrics = ctx.measureText(testLine);
-          const requiredArc = Math.acos((midR - metrics.width / 2) / midR) * midR;
-
-          if (requiredArc > innerR) {
-            // Too wide — start a new arc-line
-            arcLines.push(currentLine);
-            currentLine = [ch];
-          } else {
-            currentLine.push(ch);
-          }
-        }
-        if (currentLine.length > 0) arcLines.push(currentLine);
-      }
-
-      const totalArcHeight = arcLines.length * fontSize * 1.35;
-      const startAngle = -Math.PI / 2 - (totalArcHeight / 2 / midR);
-
-      arcLines.forEach((chars, idx) => {
-        if (chars.length === 0) return;
-        const lineStr = chars.join('');
-        const lineWidth = ctx.measureText(lineStr).width;
-
-        // Total angular span of this line's text around the circle
-        const totalArcAngle = Math.acos((midR - lineWidth / 2) / midR) * 2;
-        const letterAngle = totalArcAngle / Math.max(lineStr.length - 1, 1);
-
-        const baseAngle = startAngle + idx * (fontSize * 1.35 / midR);
-
-        for (let i = 0; i < lineStr.length; i++) {
-          const theta = baseAngle + i * letterAngle;
-          const x = midR + (midR - fontSize * 0.35) * Math.cos(theta);
-          const y = midR + (midR - fontSize * 0.35) * Math.sin(theta);
-
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(theta + Math.PI / 2); // letters upright along arc
-          ctx.fillText(lineStr[i], 0, 0);
-          ctx.restore();
-        }
-      });
-
-      const link = document.createElement('a');
-      link.download = 'circle-poem.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      showToast('PNG downloaded!');
+      const circleEl = document.getElementById('circle');
+      domtoimage.toPng(circleEl, { width: 560, height: 560, bgcolor: '#ffffff' })
+        .then(dataUrl => {
+          const link = document.createElement('a');
+          link.download = 'circle-poem.png';
+          link.href = dataUrl;
+          link.click();
+          showToast('PNG downloaded!');
+        })
+        .catch(err => showToast('PNG export failed: ' + err.message));
     });
 
-    // Init
     update();
   </script>
 </body>
