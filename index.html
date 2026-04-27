@@ -30,7 +30,11 @@
       line-height: 1.8; padding: 1rem; resize: vertical; outline: none;
     }
     textarea:focus { border-color: #7c6af7; }
-    .preview-wrap { width: 340px; height: 420px; display: flex; align-items: center; justify-content: center; }
+    .preview-wrap {
+      width: 340px; height: 420px;
+      display: flex; align-items: center; justify-content: center;
+      /* This is what we export — capture at its natural size */
+    }
 
     /* === CIRCLE TEXT WRAPPER === */
     .circle-container {
@@ -106,7 +110,7 @@
 
 The owl and the pussycat
 went to sea in a beautiful pea-green boat..."></textarea>
-    <div class="preview-wrap">
+    <div class="preview-wrap" id="preview-wrap">
       <div class="circle-container" id="circle">
         <i></i>
         <div class="circle-text" id="circle-text"></div>
@@ -132,6 +136,7 @@ went to sea in a beautiful pea-green boat..."></textarea>
     const bgColor = document.getElementById('bg-color');
     const textColor = document.getElementById('text-color');
     const circle = document.getElementById('circle');
+    const previewWrap = document.getElementById('preview-wrap');
     const centerSizeSlider = document.getElementById('center-size-slider');
     const centerSizeValue = document.getElementById('center-size-value');
     const centerColor = document.getElementById('center-color');
@@ -195,18 +200,89 @@ ${text}
       showToast('CSS copied!');
     });
 
-    // Download PNG — uses dom-to-image to capture the actual rendered DOM
+    // Download PNG — export at the circle's actual pixel size (no scaling)
     document.getElementById('btn-screenshot').addEventListener('click', () => {
-      const circleEl = document.getElementById('circle');
-      domtoimage.toPng(circleEl, { width: 560, height: 560, bgcolor: '#ffffff' })
-        .then(dataUrl => {
-          const link = document.createElement('a');
-          link.download = 'circle-poem.png';
-          link.href = dataUrl;
-          link.click();
-          showToast('PNG downloaded!');
-        })
-        .catch(err => showToast('PNG export failed: ' + err.message));
+      const s = parseInt(sizeSlider.value);
+      const p = parseInt(paddingSlider.value);
+      const bg = bgColor.value;
+      const tc = textColor.value;
+      const CS = parseInt(centerSizeSlider.value);
+      const CC = centerColor.value;
+      const rawText = textarea.value;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = s;
+      canvas.height = s;
+      const ctx = canvas.getContext('2d');
+
+      // Draw circle background
+      ctx.beginPath();
+      ctx.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // Clip to inner circle so text that "wraps" stays inside
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(s / 2, s / 2, (s - 2 * p) / 2, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Draw text lines — centred vertically, wrapping at circle edge
+      const lines = rawText.split('\n');
+      ctx.fillStyle = tc;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const fontSize = Math.max(10, Math.round(s * 0.04));
+      ctx.font = `${fontSize}px Georgia, serif`;
+
+      // Group lines that will be on the same "row" of the circle
+      const lineHeight = fontSize * 1.5;
+      const totalTextHeight = lines.length * lineHeight;
+      let yOffset = (s - totalTextHeight) / 2 + lineHeight / 2;
+
+      for (const line of lines) {
+        const words = line.split(' ');
+        let currentLine = '';
+
+        for (const word of words) {
+          const testLine = currentLine ? currentLine + ' ' + word : word;
+          const metrics = ctx.measureText(testLine);
+          // Check if this line fits inside the visible arc width at this y position
+          const yFromCenter = yOffset - s / 2;
+          const halfChord = Math.max(0, Math.sqrt(Math.max(0, Math.pow((s - 2 * p) / 2, 2) - yFromCenter * yFromCenter)));
+          if (metrics.width / 2 > halfChord && currentLine !== '') {
+            // Line too wide — draw current line and start new one
+            ctx.fillText(currentLine, s / 2, yOffset);
+            yOffset += lineHeight;
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) {
+          ctx.fillText(currentLine, s / 2, yOffset);
+          yOffset += lineHeight;
+        } else {
+          yOffset += lineHeight; // blank line
+        }
+      }
+
+      ctx.restore();
+
+      // Draw centre circle (poppy centre)
+      if (CS > 0) {
+        ctx.beginPath();
+        ctx.arc(s / 2, s / 2, CS / 2, 0, Math.PI * 2);
+        ctx.fillStyle = CC;
+        ctx.fill();
+      }
+
+      const link = document.createElement('a');
+      link.download = 'circle-poem.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('PNG downloaded!');
     });
 
     update();
