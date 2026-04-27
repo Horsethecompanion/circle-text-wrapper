@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circle Text Wrapper</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      gap: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #eef;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    label {
+      font-size: 0.875rem;
+      color: #aaa;
+    }
+
+    input[type="range"] {
+      width: 160px;
+      accent-color: #7c6af7;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    textarea {
+      width: 340px;
+      height: 420px;
+      background: #16213e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-family: 'Georgia', serif;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      padding: 1rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #7c6af7;
+    }
+
+    .preview-wrap {
+      width: 340px;
+      height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* === CIRCLE TEXT WRAPPER === */
+    .circle-container {
+      --s: 300px;  /* circle size */
+      --p: 18px;   /* padding inside circle */
+      --bg: #7c6af7;
+      --text-color: #1a1a2e;
+      --text-bg: transparent;
+
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    .circle-container i,
+    .circle-container::before {
+      content: '';
+      float: left;
+      height: 100%;
+      width: 50%;
+      shape-outside: radial-gradient(
+        farthest-side at right,
+        transparent calc(100% - var(--p)),
+        var(--text-bg) calc(100% - var(--p))
+      );
+    }
+
+    .circle-container i {
+      float: right;
+      shape-outside: radial-gradient(
+        farthest-side at left,
+        transparent calc(100% - var(--p)),
+        var(--text-bg) calc(100% - var(--p))
+      );
+    }
+
+    .circle-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: var(--p);
+      font-family: 'Georgia', serif;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: var(--text-color);
+      word-break: break-word;
+      overflow: hidden;
+    }
+    /* === END CIRCLE TEXT WRAPPER === */
+
+    .export-btns {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    button {
+      background: #7c6af7;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: #6b5ce7;
+    }
+
+    button.secondary {
+      background: #2a2a4a;
+      color: #ccc;
+    }
+
+    button.secondary:hover {
+      background: #3a3a5a;
+    }
+
+    #size-value {
+      font-size: 0.8rem;
+      color: #888;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      width: 36px;
+      height: 28px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #2a2a4a;
+      color: #ddd;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <h1>Circle Text Wrapper</h1>
+
+  <div class="controls">
+    <label>Circle size: <span id="size-value">300</span>px</label>
+    <input type="range" id="size-slider" min="200" max="500" value="300">
+
+    <label style="margin-left: 0.5rem;">Padding:</label>
+    <input type="range" id="padding-slider" min="8" max="50" value="18" style="width:100px">
+
+    <div class="color-row">
+      <label>Circle:</label>
+      <input type="color" id="bg-color" value="#7c6af7">
+      <label>Text:</label>
+      <input type="color" id="text-color" value="#ffffff">
+    </div>
+  </div>
+
+  <div class="input-area">
+    <textarea id="input-text" placeholder="Paste your poem here...
+
+The owl and the pussycat
+went to sea in a beautiful pea-green boat..."></textarea>
+
+    <div class="preview-wrap">
+      <div class="circle-container" id="circle">
+        <i></i>
+        <div class="circle-text" id="circle-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="export-btns">
+    <button id="btn-html">Copy HTML</button>
+    <button id="btn-css" class="secondary">Copy CSS</button>
+    <button id="btn-screenshot" class="secondary">Download PNG</button>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const textarea = document.getElementById('input-text');
+    const circleText = document.getElementById('circle-text');
+    const sizeSlider = document.getElementById('size-slider');
+    const paddingSlider = document.getElementById('padding-slider');
+    const sizeValue = document.getElementById('size-value');
+    const bgColor = document.getElementById('bg-color');
+    const textColor = document.getElementById('text-color');
+    const circle = document.getElementById('circle');
+
+    function update() {
+      circleText.textContent = textarea.value;
+    }
+
+    function updateSize() {
+      const s = sizeSlider.value + 'px';
+      circle.style.setProperty('--s', s);
+      sizeValue.textContent = sizeSlider.value;
+    }
+
+    function updatePadding() {
+      circle.style.setProperty('--p', paddingSlider.value + 'px');
+    }
+
+    textarea.addEventListener('input', update);
+    sizeSlider.addEventListener('input', updateSize);
+    paddingSlider.addEventListener('input', updatePadding);
+    bgColor.addEventListener('input', () => circle.style.setProperty('--bg', bgColor.value));
+    textColor.addEventListener('input', () => circle.style.setProperty('--text-color', textColor.value));
+
+    // Toast
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // Copy HTML
+    document.getElementById('btn-html').addEventListener('click', () => {
+      const s = sizeSlider.value;
+      const p = paddingSlider.value;
+      const bg = bgColor.value;
+      const tc = textColor.value;
+      const text = textarea.value;
+
+      const html = `<div style="
+  --s: ${s}px;
+  --p: ${p}px;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  position: relative;
+  background: ${bg};
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+">
+  <i style="
+    content: '';
+    float: left;
+    height: 100%;
+    width: 50%;
+    shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
+  "></i>
+  <i style="
+    content: '';
+    float: right;
+    height: 100%;
+    width: 50%;
+    shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
+  "></i>
+  <div style="
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: var(--p);
+    font-family: Georgia, serif;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: ${tc};
+  ">
+${text}
+  </div>
+</div>`;
+      navigator.clipboard.writeText(html);
+      showToast('HTML copied!');
+    });
+
+    // Copy CSS
+    document.getElementById('btn-css').addEventListener('click', () => {
+      const s = sizeSlider.value;
+      const p = paddingSlider.value;
+      const bg = bgColor.value;
+      const tc = textColor.value;
+
+      const css = `.circle-container {
+  --s: ${s}px;
+  --p: ${p}px;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  position: relative;
+  background: ${bg};
+  overflow: hidden;
+}
+
+.circle-container i,
+.circle-container::before {
+  content: '';
+  float: left;
+  height: 100%;
+  width: 50%;
+  shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
+}
+
+.circle-container i {
+  float: right;
+  shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), #fff calc(100% - var(--p)));
+}
+
+.circle-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: var(--p);
+  font-family: Georgia, serif;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: ${tc};
+}`;
+      navigator.clipboard.writeText(css);
+      showToast('CSS copied!');
+    });
+
+    // Download PNG using canvas
+    document.getElementById('btn-screenshot').addEventListener('click', () => {
+      const s = parseInt(sizeSlider.value);
+      const p = parseInt(paddingSlider.value);
+      const bg = bgColor.value;
+      const tc = textColor.value;
+      const text = textarea.value;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = s;
+      canvas.height = s;
+      const ctx = canvas.getContext('2d');
+
+      // Draw circle
+      ctx.beginPath();
+      ctx.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // Draw text using clip
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(s / 2, s / 2, (s - 2 * p) / 2, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.fillStyle = tc;
+      ctx.font = `13px Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const lines = text.split('\n');
+      const lineHeight = 18;
+      const totalHeight = lines.length * lineHeight;
+      let yStart = (s - totalHeight) / 2 + lineHeight / 2;
+
+      lines.forEach(line => {
+        ctx.fillText(line, s / 2, yStart);
+        yStart += lineHeight;
+      });
+
+      ctx.restore();
+
+      const link = document.createElement('PNG' ? 'a' : 'a');
+      link.download = 'circle-poem.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      showToast('PNG downloaded!');
+    });
+
+    // Init
+    update();
+  </script>
+</body>
+</html>
